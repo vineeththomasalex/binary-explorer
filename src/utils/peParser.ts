@@ -58,9 +58,13 @@ export function isPEFile(buffer: ArrayBuffer): boolean {
 }
 
 function parseDOSHeader(view: DataView): DOSHeader {
+  const e_lfanew = view.getUint32(0x3c, true);
+  if (e_lfanew < 64 || e_lfanew > view.byteLength - 4) {
+    throw new Error('Invalid PE offset (e_lfanew)');
+  }
   return {
     e_magic: view.getUint16(0, true),
-    e_lfanew: view.getUint32(0x3c, true),
+    e_lfanew,
   };
 }
 
@@ -179,13 +183,17 @@ function parseSections(
   return sections;
 }
 
-function rvaToFileOffset(rva: number, sections: SectionHeader[]): number | null {
+function rvaToFileOffset(rva: number, sections: SectionHeader[], bufferLength: number): number | null {
   for (const section of sections) {
     if (
       rva >= section.virtualAddress &&
       rva < section.virtualAddress + Math.max(section.virtualSize, section.sizeOfRawData)
     ) {
-      return rva - section.virtualAddress + section.pointerToRawData;
+      const fileOffset = rva - section.virtualAddress + section.pointerToRawData;
+      if (fileOffset < 0 || fileOffset >= bufferLength) {
+        return null;
+      }
+      return fileOffset;
     }
   }
   return null;
@@ -201,7 +209,7 @@ function parseImports(
   const importDir = optionalHeader.dataDirectories[1];
   if (importDir.virtualAddress === 0 || importDir.size === 0) return [];
 
-  const importOffset = rvaToFileOffset(importDir.virtualAddress, sections);
+  const importOffset = rvaToFileOffset(importDir.virtualAddress, sections, view.byteLength);
   if (importOffset === null) return [];
 
   const imports: ImportEntry[] = [];
@@ -217,7 +225,7 @@ function parseImports(
 
     if (nameRVA === 0 && originalFirstThunk === 0 && firstThunk === 0) break;
 
-    const nameOffset = rvaToFileOffset(nameRVA, sections);
+    const nameOffset = rvaToFileOffset(nameRVA, sections, view.byteLength);
     if (nameOffset === null) {
       entryOffset += 20;
       continue;
@@ -228,7 +236,7 @@ function parseImports(
 
     const lookupRVA = originalFirstThunk || firstThunk;
     if (lookupRVA) {
-      const lookupOffset = rvaToFileOffset(lookupRVA, sections);
+      const lookupOffset = rvaToFileOffset(lookupRVA, sections, view.byteLength);
       if (lookupOffset !== null) {
         let funcOffset = lookupOffset;
         const entrySize = isPE32Plus ? 8 : 4;
@@ -254,7 +262,7 @@ function parseImports(
             });
           } else {
             const hintNameRVA = Number(value & 0x7fffffffn);
-            const hintNameOffset = rvaToFileOffset(hintNameRVA, sections);
+            const hintNameOffset = rvaToFileOffset(hintNameRVA, sections, view.byteLength);
             if (hintNameOffset !== null && hintNameOffset + 2 < view.byteLength) {
               const hint = view.getUint16(hintNameOffset, true);
               const funcName = readNullTerminatedString(view, hintNameOffset + 2);
@@ -284,7 +292,7 @@ function parseExports(
   const exportDir = optionalHeader.dataDirectories[0];
   if (exportDir.virtualAddress === 0 || exportDir.size === 0) return null;
 
-  const exportOffset = rvaToFileOffset(exportDir.virtualAddress, sections);
+  const exportOffset = rvaToFileOffset(exportDir.virtualAddress, sections, view.byteLength);
   if (exportOffset === null) return null;
 
   if (exportOffset + 40 > view.byteLength) return null;
@@ -297,14 +305,14 @@ function parseExports(
   const addressOfNamesRVA = view.getUint32(exportOffset + 32, true);
   const addressOfNameOrdinalsRVA = view.getUint32(exportOffset + 36, true);
 
-  const nameOffset = rvaToFileOffset(nameRVA, sections);
+  const nameOffset = rvaToFileOffset(nameRVA, sections, view.byteLength);
   const dllName = nameOffset !== null ? readNullTerminatedString(view, nameOffset) : 'Unknown';
 
   const entries: ExportEntry[] = [];
 
-  const functionsOffset = rvaToFileOffset(addressOfFunctionsRVA, sections);
-  const namesOffset = rvaToFileOffset(addressOfNamesRVA, sections);
-  const ordinalsOffset = rvaToFileOffset(addressOfNameOrdinalsRVA, sections);
+  const functionsOffset = rvaToFileOffset(addressOfFunctionsRVA, sections, view.byteLength);
+  const namesOffset = rvaToFileOffset(addressOfNamesRVA, sections, view.byteLength);
+  const ordinalsOffset = rvaToFileOffset(addressOfNameOrdinalsRVA, sections, view.byteLength);
 
   if (functionsOffset !== null && namesOffset !== null && ordinalsOffset !== null) {
     for (let i = 0; i < Math.min(numberOfNames, 4096); i++) {
@@ -314,7 +322,7 @@ function parseExports(
       const funcNameRVA = view.getUint32(namesOffset + i * 4, true);
       const ordinalIndex = view.getUint16(ordinalsOffset + i * 2, true);
 
-      const funcNameOffset = rvaToFileOffset(funcNameRVA, sections);
+      const funcNameOffset = rvaToFileOffset(funcNameRVA, sections, view.byteLength);
       const funcName = funcNameOffset !== null
         ? readNullTerminatedString(view, funcNameOffset)
         : `Ordinal ${ordinalIndex + base}`;

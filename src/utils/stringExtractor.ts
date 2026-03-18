@@ -17,15 +17,24 @@ export function extractStrings(
       }
       current += String.fromCharCode(byte);
     } else {
+      const maxStringLength = 1000;
       if (current.length >= minLength) {
-        strings.push({ offset: startOffset, value: current });
+        strings.push({
+          offset: startOffset,
+          value: current.length > maxStringLength
+            ? current.slice(0, maxStringLength)
+            : current,
+        });
       }
       current = '';
     }
   }
 
   if (current.length >= minLength) {
-    strings.push({ offset: startOffset, value: current });
+    strings.push({
+      offset: startOffset,
+      value: current.length > 1000 ? current.slice(0, 1000) : current,
+    });
   }
 
   return strings;
