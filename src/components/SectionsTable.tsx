@@ -1,5 +1,6 @@
 import type { BinaryFile, SectionHeader, ELFSection } from '../types/binary';
 import { toHex32, toHexBigInt, formatSize } from '../utils/hexUtils';
+import { InfoPanel } from './InfoPanel';
 
 interface SectionsTableProps {
   file: BinaryFile;
@@ -11,6 +12,27 @@ export function SectionsTable({ file, onSectionClick }: SectionsTableProps) {
     return (
       <div className="sections-table">
         <h3>📦 Sections ({file.sections.length})</h3>
+        <InfoPanel title="Understanding Binary Sections">
+          <p>Sections divide the binary into logical regions. Each section has
+permissions (read/write/execute) that the OS enforces.</p>
+          <pre>{`Common PE Sections:
+┌───────────┬─────────────────────────────────────────┐
+│ .text     │ Executable code (machine instructions)  │
+│ .data     │ Initialized global/static variables     │
+│ .rdata    │ Read-only data (strings, constants)     │
+│ .bss      │ Uninitialized data (zero-filled)        │
+│ .idata    │ Import tables (DLL references)          │
+│ .edata    │ Export tables (shared symbols)           │
+│ .rsrc     │ Resources (icons, dialogs, version)     │
+│ .reloc    │ Relocation fixups for ASLR              │
+│ .pdata    │ Exception handling data                 │
+└───────────┴─────────────────────────────────────────┘`}</pre>
+          <p><strong>Virtual Address vs Raw Offset:</strong></p>
+          <p>• <strong>Virtual Address</strong> — Where the section lives in memory after loading</p>
+          <p>• <strong>Raw Offset</strong> — Where the section lives in the file on disk</p>
+          <p>• The OS maps file offsets → virtual addresses when loading</p>
+          <p>Click any section to jump to its hex dump.</p>
+        </InfoPanel>
         <div className="table-container">
           <table>
             <thead>
@@ -55,6 +77,27 @@ export function SectionsTable({ file, onSectionClick }: SectionsTableProps) {
   return (
     <div className="sections-table">
       <h3>📦 Sections ({file.sections.length})</h3>
+      <InfoPanel title="Understanding Binary Sections">
+        <p>Sections divide the binary into logical regions. Each section has
+permissions (read/write/execute) that the OS enforces.</p>
+        <pre>{`Common PE Sections:
+┌───────────┬─────────────────────────────────────────┐
+│ .text     │ Executable code (machine instructions)  │
+│ .data     │ Initialized global/static variables     │
+│ .rdata    │ Read-only data (strings, constants)     │
+│ .bss      │ Uninitialized data (zero-filled)        │
+│ .idata    │ Import tables (DLL references)          │
+│ .edata    │ Export tables (shared symbols)           │
+│ .rsrc     │ Resources (icons, dialogs, version)     │
+│ .reloc    │ Relocation fixups for ASLR              │
+│ .pdata    │ Exception handling data                 │
+└───────────┴─────────────────────────────────────────┘`}</pre>
+        <p><strong>Virtual Address vs Raw Offset:</strong></p>
+        <p>• <strong>Virtual Address</strong> — Where the section lives in memory after loading</p>
+        <p>• <strong>Raw Offset</strong> — Where the section lives in the file on disk</p>
+        <p>• The OS maps file offsets → virtual addresses when loading</p>
+        <p>Click any section to jump to its hex dump.</p>
+      </InfoPanel>
       <div className="table-container">
         <table>
           <thead>

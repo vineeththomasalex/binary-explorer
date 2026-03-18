@@ -534,6 +534,70 @@ tbody td {
   cursor: not-allowed;
 }
 
+/* --- Info Panel --- */
+.info-panel {
+  margin: 8px 0 16px 0;
+}
+
+.info-panel-toggle {
+  background: none;
+  border: 1px solid #333;
+  color: #8b8b8b;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.info-panel-toggle:hover {
+  border-color: #00ff41;
+  color: #00ff41;
+}
+
+.info-panel-toggle.active {
+  border-color: #00ff41;
+  color: #00ff41;
+}
+
+.info-panel-content {
+  margin-top: 8px;
+  padding: 16px;
+  background: #111;
+  border-left: 3px solid #00ff41;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #ccc;
+  overflow-x: auto;
+}
+
+.info-panel-content .info-panel-title {
+  color: #00ff41;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.info-panel-content pre {
+  margin: 8px 0;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.8rem;
+  color: #00ff41;
+  line-height: 1.4;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.info-panel-content p {
+  margin: 8px 0;
+  color: #aaa;
+}
+
+.info-panel-content strong {
+  color: #ffd700;
+}
+
 /* --- Scrollbar --- */
 ::-webkit-scrollbar {
   width: 8px;

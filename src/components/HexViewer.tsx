@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { formatOffset, isPrintableAscii, byteToAscii } from '../utils/hexUtils';
+import { InfoPanel } from './InfoPanel';
 
 interface HexViewerProps {
   buffer: ArrayBuffer;
@@ -101,6 +102,28 @@ export function HexViewer({ buffer, scrollToOffset }: HexViewerProps) {
   return (
     <div className="hex-viewer">
       <h3>🔍 Hex Viewer</h3>
+      <InfoPanel title="Reading Hex Data">
+        <p>The hex viewer shows the raw bytes of the file. Each row displays
+16 bytes in hexadecimal alongside their ASCII representation.</p>
+        <pre>{`Reading Hex:
+  OFFSET    HEX BYTES (16 per row)                    ASCII
+  00000000  4D 5A 90 00 03 00 00 00 04 00 00 00 FF FF 00 00  |MZ..............|
+            ^^                                                  ^^
+            Each pair = 1 byte (00-FF = 0-255)                  Printable chars
+                                                                '.' = non-printable
+
+Endianness (byte order):
+• x86/x64 use Little-Endian: bytes are stored least-significant first
+• The value 0x00004550 ("PE\\0\\0") is stored as: 50 45 00 00
+• Address 0x00012000 is stored as: 00 20 01 00
+
+Common Magic Numbers:
+• 4D 5A        — "MZ" (PE/DOS executable)
+• 7F 45 4C 46  — "\\x7FELF" (ELF executable)
+• 50 45 00 00  — "PE\\0\\0" (PE signature)
+• CA FE BA BE  — Mach-O / Java class file`}</pre>
+        <p>Click a section in the Sections tab to jump to its offset here.</p>
+      </InfoPanel>
       <div className="hex-info">
         {bytes.length.toLocaleString()} bytes total · {totalRows.toLocaleString()} rows
       </div>

@@ -1,4 +1,5 @@
 import type { ImportEntry } from '../types/binary';
+import { InfoPanel } from './InfoPanel';
 
 interface ImportsTableProps {
   imports: ImportEntry[];
@@ -9,6 +10,29 @@ export function ImportsTable({ imports }: ImportsTableProps) {
     return (
       <div className="imports-table">
         <h3>📥 Imports</h3>
+        <InfoPanel title="Understanding Imports">
+          <p>Imports list the external functions this binary needs from other
+DLLs (Dynamic Link Libraries). The OS resolves these at load time.</p>
+          <pre>{`How Importing Works:
+┌─────────────┐    load time     ┌─────────────┐
+│  your.exe   │ ──────────────→  │ kernel32.dll │
+│             │  "I need         │              │
+│ CreateFile  │   CreateFile()"  │ CreateFile() │ ← actual code
+│ ReadFile    │                  │ ReadFile()   │
+│ CloseHandle │                  │ CloseHandle()│
+└─────────────┘                  └──────────────┘
+
+PE Import Table Structure:
+Import Directory → list of DLL descriptors
+  └→ Each DLL has an Import Lookup Table (ILT)
+       └→ Each entry points to a function name or ordinal`}</pre>
+          <p><strong>Common DLLs:</strong></p>
+          <p>• <strong>kernel32.dll</strong> — File I/O, memory, processes, threads</p>
+          <p>• <strong>user32.dll</strong> — Windows, messages, UI</p>
+          <p>• <strong>ntdll.dll</strong> — Low-level NT kernel interface</p>
+          <p>• <strong>msvcrt.dll</strong> — C runtime (printf, malloc, etc.)</p>
+          <p>• <strong>advapi32.dll</strong> — Registry, security, services</p>
+        </InfoPanel>
         <p className="empty-message">No imports found</p>
       </div>
     );
@@ -17,6 +41,29 @@ export function ImportsTable({ imports }: ImportsTableProps) {
   return (
     <div className="imports-table">
       <h3>📥 Imports ({imports.length} DLLs)</h3>
+      <InfoPanel title="Understanding Imports">
+        <p>Imports list the external functions this binary needs from other
+DLLs (Dynamic Link Libraries). The OS resolves these at load time.</p>
+        <pre>{`How Importing Works:
+┌─────────────┐    load time     ┌─────────────┐
+│  your.exe   │ ──────────────→  │ kernel32.dll │
+│             │  "I need         │              │
+│ CreateFile  │   CreateFile()"  │ CreateFile() │ ← actual code
+│ ReadFile    │                  │ ReadFile()   │
+│ CloseHandle │                  │ CloseHandle()│
+└─────────────┘                  └──────────────┘
+
+PE Import Table Structure:
+Import Directory → list of DLL descriptors
+  └→ Each DLL has an Import Lookup Table (ILT)
+       └→ Each entry points to a function name or ordinal`}</pre>
+        <p><strong>Common DLLs:</strong></p>
+        <p>• <strong>kernel32.dll</strong> — File I/O, memory, processes, threads</p>
+        <p>• <strong>user32.dll</strong> — Windows, messages, UI</p>
+        <p>• <strong>ntdll.dll</strong> — Low-level NT kernel interface</p>
+        <p>• <strong>msvcrt.dll</strong> — C runtime (printf, malloc, etc.)</p>
+        <p>• <strong>advapi32.dll</strong> — Registry, security, services</p>
+      </InfoPanel>
       <div className="imports-list">
         {imports.map((entry, i) => (
           <details key={i} className="import-group">

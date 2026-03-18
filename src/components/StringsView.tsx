@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import type { ExtractedString } from '../types/binary';
 import { extractStrings } from '../utils/stringExtractor';
 import { toHex32 } from '../utils/hexUtils';
+import { InfoPanel } from './InfoPanel';
 
 interface StringsViewProps {
   buffer: ArrayBuffer;
@@ -32,6 +33,27 @@ export function StringsView({ buffer, onStringClick }: StringsViewProps) {
   return (
     <div className="strings-view">
       <h3>🔤 Strings ({filtered.length.toLocaleString()} found)</h3>
+      <InfoPanel title="Understanding String Extraction">
+        <p>String extraction finds readable ASCII text embedded in the binary.
+This can reveal file paths, error messages, version strings,
+registry keys, URLs, and other useful information.</p>
+        <pre>{`What strings can tell you:
+• Error messages   → Hints about functionality
+• File paths       → Files the program accesses
+• Registry keys    → Configuration locations
+• URLs             → Network endpoints
+• DLL names        → Dependencies not in import table
+• Debug symbols    → Function/variable names (if not stripped)
+
+How it works:
+Scan every byte → if 4+ consecutive printable ASCII chars
+(0x20-0x7E) are found, it's reported as a string.
+
+   Bytes:  48 65 6C 6C 6F 00 FF 01 57 6F 72 6C 64 00
+   ASCII:   H  e  l  l  o  .  .  .  W  o  r  l  d  .
+   Found:  "Hello"                  "World"`}</pre>
+        <p>Filter and click any string to jump to its location in the hex viewer.</p>
+      </InfoPanel>
       <div className="strings-controls">
         <label>
           Min length:
